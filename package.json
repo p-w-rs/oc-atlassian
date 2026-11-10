@@ -1,10 +1,18 @@
 {
   "name": "oc-atlassian",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
   "description": "Atlassian (Jira and Confluence) for OpenCode agents: browser sign-in with SSO, API tokens or Data Center PATs, every action with per-site permissions and built-in know-how",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/p-w-rs/oc-atlassian.git"
+  },
+  "homepage": "https://github.com/p-w-rs/oc-atlassian#readme",
+  "bugs": {
+    "url": "https://github.com/p-w-rs/oc-atlassian/issues"
+  },
   "exports": {
     ".": "./plugin/index.ts",
     "./gui-experimental": "./dist/gui-experimental.cjs"
@@ -40,7 +48,7 @@
   },
   "dependencies": {
     "jsonc-parser": "3.3.1",
-    "oc-secure-kit": "file:vendor/oc-secure-kit-0.5.1.tgz"
+    "oc-secure-kit": "file:vendor/oc-secure-kit-1.0.0.tgz"
   },
   "devDependencies": {
     "@opencode/plugin": "2.2.6",

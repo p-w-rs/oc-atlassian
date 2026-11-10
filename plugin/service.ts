@@ -1,8 +1,6 @@
 import { join } from "node:path"
-import { PolicyStore, Redactor, SecretRequests, Serial, Vault, type PermissionBridge } from "oc-secure-kit"
-import { HttpStatusError, McpClient, type ToolInfo } from "./mcp.js"
-import { ACCESS, API_TOKEN, isCloud, OAUTH, REFRESH, secretSlots, type Account, type Discovery } from "./model.js"
-import { DEFAULT_MCP, refresh, startBrowserSignIn, type BrowserSignIn, type Grant, type OAuthClient } from "./oauth.js"
+import { HttpStatusError, McpClient, PolicyStore, Redactor, refreshGrant, SecretRequests, Serial, startBrowserSignIn, Vault, type BrowserSignIn, type Grant, type McpToolInfo as ToolInfo, type OAuthClient, type PermissionBridge } from "oc-secure-kit"
+import { ACCESS, API_TOKEN, DEFAULT_MCP, isCloud, OAUTH, REFRESH, SCOPE_PATTERN, secretSlots, type Account, type Discovery } from "./model.js"
 import { AccountStore } from "./store.js"
 
 export const PLUGIN_ID = "oc-atlassian"
@@ -90,7 +88,7 @@ export class AtlassianService {
       if (token && !force && (!oauth?.expiresAt || oauth.expiresAt - Date.now() > 5 * 60_000)) return token
       const refreshToken = await this.vault.get(account.id, REFRESH)
       if (!refreshToken || !oauth) return token
-      const grant = await refresh(oauth, refreshToken)
+      const grant = await refreshGrant(oauth, refreshToken, "Atlassian")
       await this.saveGrant(account, { ...grant, refreshToken: grant.refreshToken ?? refreshToken }, oauth)
       return grant.accessToken
     })
@@ -116,7 +114,10 @@ export class AtlassianService {
   mcp(account: Account): McpClient {
     let client = this.#mcp.get(account.id)
     if (!client) {
-      client = new McpClient(`${this.mcpUrl}?tools=all`, () => this.authorization(account), account.auth === "browser" ? async () => { await this.accessToken(account, true) } : undefined)
+      client = new McpClient(`${this.mcpUrl}?tools=all`, {
+        authorization: () => this.authorization(account), clientName: PLUGIN_ID, clientVersion: "1.0.0", service: "Atlassian",
+        ...(account.auth === "browser" && { onUnauthorized: async () => { await this.accessToken(account, true) } }),
+      })
       this.#mcp.set(account.id, client)
     }
     return client
@@ -221,7 +222,10 @@ export class AtlassianService {
     const running = this.signIns.get(account.id)
     if (running?.status === "waiting" && running.expiresAt > Date.now()) return running
     running?.flow.cancel()
-    const flow = await startBrowserSignIn(this.mcpUrl)
+    const flow = await startBrowserSignIn(this.mcpUrl, {
+      clientName: "OpenCode (oc-atlassian)", service: "Atlassian", authorizeParams: { prompt: "consent" },
+      scopes: advertised => advertised.filter(scope => SCOPE_PATTERN.test(scope)),
+    })
     const state: SignInState = { account: account.id, url: flow.url, expiresAt: flow.expiresAt, status: "waiting", flow }
     this.signIns.set(account.id, state)
     flow.done

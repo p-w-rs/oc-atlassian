@@ -2,6 +2,11 @@ import { validName } from "oc-secure-kit"
 
 export const ACCOUNTS_FORMAT = "oc-atlassian-accounts/1"
 
+/** Atlassian's agent interface (Rovo MCP). Overridable for tests. */
+export const DEFAULT_MCP = "https://mcp.atlassian.com/v2/mcp"
+/** Scopes requested: everything Jira and Confluence offer, plus identity and refresh. */
+export const SCOPE_PATTERN = /^(read|write|search|delete|manage):(jira|confluence):agent-interface$|^read:me$|^read:account$|^offline_access$/
+
 /**
  * How an account signs in.
  * - browser: Atlassian Cloud browser sign-in (OAuth 2.1, works with SSO), through Atlassian's agent interface (Rovo MCP).

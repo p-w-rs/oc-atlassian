@@ -41,16 +41,26 @@ is editable in the GUI (`/atlassian`, the Review-pane **+** menu, or
 **Settings → Atlassian**); **Allow always** on a prompt writes allow.
 Atlassian's own permissions still apply.
 
-## Setup
+## Install
+
+Requires [OpenCode](https://opencode.ai) 2.2.6+ (CLI or Desktop) and [Pixi](https://pixi.sh); macOS or Linux.
 
 ```sh
-pixi run --locked install                                 # verified snapshot into your OpenCode config
-pixi run signin work --site acme.atlassian.net            # or use the GUI, or ask your agent
-pixi run token-set dc                                      # token/PAT accounts
+git clone https://github.com/p-w-rs/oc-atlassian.git && cd oc-atlassian
+pixi run --locked install          # runs the tests, then installs a verified snapshot into your OpenCode config
 ```
 
-Export/Import in the GUI moves accounts, permissions and sign-ins between
-installs (passphrase-encrypted).
+Restart OpenCode (or `/reload`). Then open **Settings → Atlassian** (or `/atlassian` in a session) and add an account, or from a terminal: `pixi run signin work --site acme.atlassian.net`.
+Agents can also set things up for you when you ask.
+
+```sh
+pixi run --locked install-status   # what is installed, and whether its files are intact
+pixi run --locked rollback         # back to the previous snapshot
+pixi run --locked uninstall        # removes only this plugin's entry; your data stays
+```
+
+Updating: `git pull && pixi run --locked install`. Accounts, sign-ins and permissions live in
+`~/.local/share/oc-atlassian` and survive updates; move them between computers with **Export** / **Import** in the view.
 
 ## Development
 

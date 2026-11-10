@@ -1,5 +1,5 @@
 import type { ToolContext } from "@opencode/plugin/promise/tool"
-import type { ToolInfo } from "./mcp.js"
+import type { McpToolInfo as ToolInfo } from "oc-secure-kit"
 import { API_TOKEN, capabilityOf, classifyAction, classifyRest, mergeAccount, normalizeAccount, validAccountId, type Account, type Discovery } from "./model.js"
 import type { AtlassianService } from "./service.js"
 
