@@ -115,7 +115,7 @@ export class AtlassianService {
     let client = this.#mcp.get(account.id)
     if (!client) {
       client = new McpClient(`${this.mcpUrl}?tools=all`, {
-        authorization: () => this.authorization(account), clientName: PLUGIN_ID, clientVersion: "1.0.0", service: "Atlassian",
+        authorization: () => this.authorization(account), clientName: PLUGIN_ID, clientVersion: "1.0.1", service: "Atlassian",
         ...(account.auth === "browser" && { onUnauthorized: async () => { await this.accessToken(account, true) } }),
       })
       this.#mcp.set(account.id, client)
