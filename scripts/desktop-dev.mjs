@@ -90,14 +90,14 @@ if (command === "start") {
   }, null, 2))
   const env = envFor(profile)
   execFileSync(cli, ["service", "set", "port", String(await freePort())], { env, cwd: profile, stdio: "pipe" })
-  // A fake GitHub (device flow + API) so GUI sign-in can be clicked through; approve with: eval 'fetch("<web>/__approve")'.
-  const { startFakeGitHub } = await import("../plugin/testgithub.ts")
-  const github = await startFakeGitHub({ login: "jdoe-fake", token: "gho_desktopFakeToken_0123456789", orgs: ["acme"], ssoBlocked: ["locked-org"] })
+  // A fake Atlassian so the GUI sign-in can be clicked through: its authorize page approves at once and redirects back.
+  const { startFakeAtlassian } = await import("../plugin/testatlassian.ts")
+  const atlassian = await startFakeAtlassian({ apiToken: "ATATT-desktop-fake-token", email: "me@acme.example" })
   const configFile = path.join(profile, "config/opencode/opencode.json")
   const written = JSON.parse(await readFile(configFile, "utf8"))
-  written.plugins = [{ package: root, options: { endpoints: { [github.host]: { web: github.web, api: github.api } } } }]
+  written.plugins = [{ package: root, options: { mcpUrl: atlassian.mcpUrl } }]
   await writeFile(configFile, JSON.stringify(written, null, 2))
-  await writeFile(path.join(stateDir, "fake-github.json"), JSON.stringify({ host: github.host, web: github.web }))
+  await writeFile(path.join(stateDir, "fake-atlassian.json"), JSON.stringify({ base: atlassian.base, site: atlassian.site }))
   const child = spawn(APP, ["--remote-debugging-port=0"], { env, cwd: path.join(profile, "workspace"), detached: true, stdio: ["ignore", "pipe", "pipe"] })
   let logs = ""
   const port = await new Promise((resolve, reject) => {
@@ -109,7 +109,7 @@ if (command === "start") {
     })
     child.once("exit", code => reject(new Error(`Desktop exited ${code}: ${logs.slice(-2000)}`)))
   })
-  await writeFile(connectionFile, JSON.stringify({ profile, pid: child.pid, port, workspace: path.join(profile, "workspace"), github: github.host }, null, 2))
+  await writeFile(connectionFile, JSON.stringify({ profile, pid: child.pid, port, workspace: path.join(profile, "workspace"), atlassian: atlassian.base }, null, 2))
   console.log(JSON.stringify({ profile, pid: child.pid, port }))
   // Keep the scripted provider alive with the app; this process stays in the background until stop.
   child.stdout.on("data", () => {}); child.stderr.on("data", () => {})
