@@ -1,6 +1,6 @@
 [workspace]
 name = "oc-atlassian"
-version = "1.0.1"
+version = "1.0.2"
 description = "Atlassian (Jira and Confluence) for OpenCode agents"
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "osx-64", "linux-64", "linux-aarch64"]
